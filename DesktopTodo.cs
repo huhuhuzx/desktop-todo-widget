@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -101,4 +101,3 @@ internal static class Program
 {
  [STAThread]static void Main(string[] args){bool test=args!=null&&args.Any(x=>String.Equals(x,"--self-test",StringComparison.OrdinalIgnoreCase));bool created;using(var m=new Mutex(true,@"Local\DesktopTodoWidget_Native_2",out created)){if(!created){MessageBox.Show("桌面日程已经在运行。","桌面日程");return;}try{new DesktopTodoApp(test).Run();}catch(Exception ex){string log=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"桌面日程-错误日志.txt");try{File.AppendAllText(log,DateTime.Now+Environment.NewLine+ex+Environment.NewLine,Encoding.UTF8);}catch{}MessageBox.Show("程序启动失败，详情见错误日志。","桌面日程");}}}
 }
-

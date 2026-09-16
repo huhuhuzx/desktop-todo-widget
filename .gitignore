@@ -2,6 +2,7 @@
 tasks.json
 widget-settings.json
 *.log
+桌面日程-错误日志.txt
 logs/
 
 # Built application and temporary build products
@@ -22,4 +23,3 @@ dist/
 *.suo
 Thumbs.db
 desktop.ini
-

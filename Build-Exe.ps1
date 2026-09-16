@@ -1,4 +1,4 @@
-param()
+﻿param()
 
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -20,4 +20,3 @@ $args=@(
 & $csc $args
 if($LASTEXITCODE-ne0){throw '编译失败'}
 Write-Output '桌面日程.exe 编译成功。'
-
