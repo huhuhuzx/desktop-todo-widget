@@ -2,14 +2,14 @@ using System;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Effects;
 
-// Native WPF counterparts of transitions-dev's timing, direction and state rules.
+// Native WPF counterparts of transitions-dev's timing and state rules. BlurEffect is
+// deliberately omitted: on WPF it repaints text and whole panels on every frame.
 internal static class Motion
 {
+ public const int Stagger=40,Micro=80,Quick=150,Fast=250,Medium=350,Slow=400,VerySlow=500;
  public static bool Enabled { get { return SystemParameters.ClientAreaAnimation; } }
  static readonly IEasingFunction Smooth = new CubicEase { EasingMode = EasingMode.EaseOut };
- static readonly IEasingFunction Spring = new BackEase { Amplitude = .42, EasingMode = EasingMode.EaseOut };
 
  public static void Tween(DependencyObject target, DependencyProperty property, double from, double to, int ms, bool spring = false, Action completed = null)
  {
@@ -20,7 +20,7 @@ internal static class Motion
   else animatable.BeginAnimation(property, null);
   target.SetValue(property, from);
   if (!Enabled || ms <= 0) { target.SetValue(property, to); if(completed!=null)completed(); return; }
-  var animation = new DoubleAnimation(from, to, TimeSpan.FromMilliseconds(ms)) { EasingFunction = spring ? Spring : Smooth, FillBehavior = FillBehavior.HoldEnd };
+  var animation = new DoubleAnimation(from, to, TimeSpan.FromMilliseconds(ms)) { EasingFunction = Smooth, FillBehavior = FillBehavior.HoldEnd };
   animation.Completed += delegate { target.SetValue(property, to); if (ui != null) ui.BeginAnimation(property, null); else animatable.BeginAnimation(property, null); if(completed!=null)completed(); };
   if (ui != null) ui.BeginAnimation(property, animation);
   else animatable.BeginAnimation(property, animation);
@@ -36,24 +36,17 @@ internal static class Motion
  public static ScaleTransform Scale(UIElement element) { return (ScaleTransform)Transforms(element).Children[0]; }
  public static RotateTransform Rotate(UIElement element) { return (RotateTransform)Transforms(element).Children[1]; }
  public static TranslateTransform Translate(UIElement element) { return (TranslateTransform)Transforms(element).Children[2]; }
- public static BlurEffect Blur(UIElement element)
+ public static void Enter(UIElement element, int ms = Fast, double x = 0, double y = 8, double scale = .96, double blur = 2)
  {
-  BlurEffect effect = element.Effect as BlurEffect;
-  if (effect == null) { effect = new BlurEffect { Radius = 0 }; element.Effect = effect; }
-  return effect;
- }
- public static void Enter(UIElement element, int ms = 250, double x = 0, double y = 8, double scale = .96, double blur = 2)
- {
-  if (!Enabled) { element.Opacity = 1; Translate(element).X=0; Translate(element).Y=0; Scale(element).ScaleX=1; Scale(element).ScaleY=1; Blur(element).Radius=0; return; }
+  if (!Enabled) { element.Opacity = 1; Translate(element).X=0; Translate(element).Y=0; Scale(element).ScaleX=1; Scale(element).ScaleY=1; return; }
   var t = Translate(element); var s = Scale(element);
   Tween(element, UIElement.OpacityProperty, 0, 1, ms);
   Tween(t, TranslateTransform.XProperty, x, 0, ms);
   Tween(t, TranslateTransform.YProperty, y, 0, ms);
   Tween(s, ScaleTransform.ScaleXProperty, scale, 1, ms);
   Tween(s, ScaleTransform.ScaleYProperty, scale, 1, ms);
-  if (blur > 0) Tween(Blur(element), BlurEffect.RadiusProperty, blur, 0, ms);
  }
- public static void Exit(UIElement element, Action completed, int ms = 150, double x = 0, double y = -4, double scale = .98, double blur = 2)
+ public static void Exit(UIElement element, Action completed, int ms = Quick, double x = 0, double y = -4, double scale = .98, double blur = 2)
  {
   if (!Enabled) { if(completed!=null)completed(); return; }
   Tween(element, UIElement.OpacityProperty, element.Opacity, 0, ms, false, completed);
@@ -61,7 +54,6 @@ internal static class Motion
   Tween(Translate(element), TranslateTransform.YProperty, Translate(element).Y, y, ms);
   Tween(Scale(element), ScaleTransform.ScaleXProperty, Scale(element).ScaleX, scale, ms);
   Tween(Scale(element), ScaleTransform.ScaleYProperty, Scale(element).ScaleY, scale, ms);
-  if (blur > 0) Tween(Blur(element), BlurEffect.RadiusProperty, 0, blur, ms);
  }
  public static void Shake(UIElement element)
  {
@@ -78,8 +70,8 @@ internal static class Motion
  public static void Lift(UIElement element, double y, double scale, bool spring = false)
  {
   var t = Translate(element); var s = Scale(element);
-  Tween(t, TranslateTransform.YProperty, t.Y, y, 320, spring);
-  Tween(s, ScaleTransform.ScaleXProperty, s.ScaleX, scale, 320, spring);
-  Tween(s, ScaleTransform.ScaleYProperty, s.ScaleY, scale, 320, spring);
+  Tween(t, TranslateTransform.YProperty, t.Y, y, Fast, spring);
+  Tween(s, ScaleTransform.ScaleXProperty, s.ScaleX, scale, Fast, spring);
+  Tween(s, ScaleTransform.ScaleYProperty, s.ScaleY, scale, Fast, spring);
  }
 }

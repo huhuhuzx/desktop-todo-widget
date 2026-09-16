@@ -1,6 +1,6 @@
 # 桌面待办清单
 
-一款适用于 Windows 11 的桌面待办与日程小工具。窗口支持拖动、调整大小、浅色／深色模式与透明度设置；可查看任务详情、切换视图和管理日程。
+一款适用于 Windows 11 的桌面待办与日程小工具。窗口支持拖动、调整大小、浅色／深色模式、自选主题色与玻璃底色浓度设置；可查看任务详情、切换视图和管理日程。窗口使用单一 WPF 透明圆角与半透明渐变材质，不再调用 DWM Acrylic 或原生窗口区域裁剪。桌面内容可透过玻璃底色，但此方案不实时模糊窗口后方的其他应用。
 
 ## 编译
 
@@ -10,9 +10,13 @@
 powershell -ExecutionPolicy Bypass -File .\Build-Exe.ps1
 ```
 
-编译脚本使用系统的 .NET Framework WPF 编译器，生成 `桌面日程.exe`。运行程序后，任务和本机设置分别保存在程序所在目录的 `tasks.json` 与 `widget-settings.json` 中。
+编译脚本使用系统的 .NET Framework WPF 编译器，生成 `桌面日程.exe`。运行程序后，任务和本机设置分别保存在程序所在目录的 `tasks.json` 与 `widget-settings.json` 中。若任务文件损坏，程序会停止启动并保留原文件，不会把空列表写回去。
 
-界面动效参考 [transitions-dev](https://github.com/Jakubantalik/transitions.dev/tree/main/skills/transitions-dev) 的前 12 项交互范例，已由 CSS 动效改写为原生 WPF 动画。关闭 Windows 系统动画后，界面会直接切换到最终状态。动画实现位于 `Motion.cs`，可连同源码一起重新编译。
+时间使用与日期框同高的单值控件：滚动鼠标滚轮、单击或按方向键调整小时与分钟，右键可反向调整；小时显示“全天”时不设时间。日期弹窗提供月份／年份切换和“回到今天”。提醒仅在程序运行时准时触发；重新打开程序时，会补报过去 24 小时内仍未提示的日程。程序完全关闭期间不会弹出通知，也不会创建 Windows 计划任务。
+
+在外观设置中点击主题色卡片，可直接选择预设色，或输入 `#RRGGBB` 应用任意颜色。主题色同步用于操作按钮、选中／悬停状态、提醒角标、滑杆及玻璃底色的轻微色调。
+
+界面动效参考 [transitions-dev](https://github.com/Jakubantalik/transitions.dev/tree/main/skills/transitions-dev) 的用途与时间尺度，改写为原生 WPF 动画；标题、图标与数字只在内部内容上做短暂变化，避免高频模糊重绘。关闭 Windows 系统动画后，界面会直接切换到最终状态。动画实现位于 `Motion.cs`，可连同源码一起重新编译。
 
 ## 隐私
 
