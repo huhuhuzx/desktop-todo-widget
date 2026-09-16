@@ -15,8 +15,9 @@ $args=@(
  ('/win32icon:'+[IO.Path]::Combine($root,'桌面日程.ico')),
  ('/win32manifest:'+[IO.Path]::Combine($root,'app.manifest')),
  ('/resource:'+([IO.Path]::Combine($root,'UI.xaml'))+',UI.xaml'),
- ('/resource:'+([IO.Path]::Combine($root,'DesktopTodo.cs'))+',DesktopTodo.cs')
-)+($refs|ForEach-Object{'/reference:'+$_})+@([IO.Path]::Combine($root,'DesktopTodo.cs'))
+ ('/resource:'+([IO.Path]::Combine($root,'DesktopTodo.cs'))+',DesktopTodo.cs'),
+ ('/resource:'+([IO.Path]::Combine($root,'Motion.cs'))+',Motion.cs')
+)+($refs|ForEach-Object{'/reference:'+$_})+@([IO.Path]::Combine($root,'DesktopTodo.cs'),[IO.Path]::Combine($root,'Motion.cs'))
 & $csc $args
 if($LASTEXITCODE-ne0){throw '编译失败'}
 Write-Output '桌面日程.exe 编译成功。'

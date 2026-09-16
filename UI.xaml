@@ -230,7 +230,7 @@
                     <ColumnDefinition Width="36" />
                   </Grid.ColumnDefinitions>
                   <Button x:Name="PART_PreviousButton" Content="‹" FontSize="22" Style="{StaticResource IconButton}" />
-                  <Button x:Name="PART_HeaderButton" Grid.Column="1" FontSize="14" FontWeight="SemiBold" Style="{StaticResource IconButton}" />
+                  <Button x:Name="PART_HeaderButton" Grid.Column="1" FontSize="14" FontWeight="SemiBold" Style="{StaticResource IconButton}" ToolTip="点击快速选择月份或年份" />
                   <Button x:Name="PART_NextButton" Grid.Column="2" Content="›" FontSize="22" Style="{StaticResource IconButton}" />
                 </Grid>
                 <Grid x:Name="PART_MonthView" Grid.Row="1">
@@ -268,6 +268,16 @@
                 </Grid>
               </Grid>
             </Border>
+            <ControlTemplate.Triggers>
+              <DataTrigger Binding="{Binding DisplayMode, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Calendar}}}" Value="Year">
+                <Setter TargetName="PART_MonthView" Property="Visibility" Value="Hidden" />
+                <Setter TargetName="PART_YearView" Property="Visibility" Value="Visible" />
+              </DataTrigger>
+              <DataTrigger Binding="{Binding DisplayMode, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Calendar}}}" Value="Decade">
+                <Setter TargetName="PART_MonthView" Property="Visibility" Value="Hidden" />
+                <Setter TargetName="PART_YearView" Property="Visibility" Value="Visible" />
+              </DataTrigger>
+            </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
       </Setter>
@@ -391,9 +401,14 @@
           </Border>
           <Button x:Name="NewButton" Grid.Column="1" Content="＋ 新建" Style="{StaticResource PrimaryButton}" />
         </Grid>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="17,0,17,10">
+        <StackPanel x:Name="TabStrip" Grid.Row="2" Orientation="Horizontal" Margin="17,0,17,10">
           <Button x:Name="AgendaTab" Content="日程" Style="{StaticResource TabButton}" />
-          <Button x:Name="TodayTab" Content="今天" Style="{StaticResource TabButton}" />
+          <Grid>
+            <Button x:Name="TodayTab" Content="今天" Style="{StaticResource TabButton}" />
+            <Border x:Name="TodayBadge" Visibility="Collapsed" IsHitTestVisible="False" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-5,-4,0" Background="#F06D6D" CornerRadius="9" MinWidth="18" Height="18" Padding="4,0" Panel.ZIndex="2">
+              <TextBlock x:Name="TodayBadgeText" Foreground="White" FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+          </Grid>
           <Button x:Name="CalendarTab" Content="月历" Style="{StaticResource TabButton}" />
           <Button x:Name="CompletedTab" Content="已完成" Style="{StaticResource TabButton}" />
         </StackPanel>
@@ -416,7 +431,7 @@
               </ListBox.ItemContainerStyle>
               <ListBox.ItemTemplate>
                 <DataTemplate>
-                  <Border Background="{DynamicResource ItemBrush}" CornerRadius="14" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="4,10,7,10">
+                  <Border x:Name="TaskCard" Background="{DynamicResource ItemBrush}" CornerRadius="14" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="4,10,7,10">
                     <Grid>
                       <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="5" />
@@ -459,7 +474,15 @@
               <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Calendar x:Name="MonthCalendar" HorizontalAlignment="Center" SelectionMode="SingleDate" />
-            <ListBox x:Name="DayList" Grid.Row="1" Margin="0,10,0,0" Background="Transparent" BorderThickness="0" DisplayMemberPath="Display" />
+            <Grid Grid.Row="1" Margin="0,10,0,0">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+              <TextBlock x:Name="SelectedDayHeading" Margin="6,0,0,8" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" />
+              <ListBox x:Name="DayList" Grid.Row="1" Background="Transparent" BorderThickness="0" DisplayMemberPath="Display" />
+              <TextBlock x:Name="CalendarNavHint" Grid.RowSpan="2" Margin="6,8,6,0" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Visibility="Collapsed" />
+            </Grid>
           </Grid>
           <Border x:Name="EditorPanel" Visibility="Collapsed" Panel.ZIndex="20" Background="{DynamicResource PanelBrush}" CornerRadius="17" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="18">
             <Grid>
@@ -475,9 +498,10 @@
               <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Margin="0,0,8,0">
                 <TextBlock Text="标题" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,5" />
-                <Border Background="{DynamicResource InputBrush}" CornerRadius="10" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                <Border x:Name="TitleInputBorder" Background="{DynamicResource InputBrush}" CornerRadius="10" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                   <TextBox x:Name="EditTitle" Padding="10,8" FontSize="14" />
                 </Border>
+                <TextBlock x:Name="EditorError" Text="请填写日程标题" Foreground="#E15E66" FontSize="11" Margin="3,5,0,0" Visibility="Collapsed" />
                 <Grid Margin="0,12,0,0">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -583,10 +607,18 @@
           </Border>
         </Grid>
         <Grid Grid.Row="4" Margin="21,11,18,15">
-          <TextBlock x:Name="CountText" VerticalAlignment="Center" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <StackPanel x:Name="PendingDigits" Orientation="Horizontal" />
+            <TextBlock Text=" 项待完成 · " FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+            <StackPanel x:Name="TotalDigits" Orientation="Horizontal" />
+            <TextBlock Text=" 项日程" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+          </StackPanel>
           <TextBlock Text="拖动边缘可调整大小" HorizontalAlignment="Right" FontSize="10" Foreground="{DynamicResource TextSecondaryBrush}" />
         </Grid>
       </Grid>
+    </Border>
+    <Border x:Name="SuccessToast" Visibility="Collapsed" IsHitTestVisible="False" Width="54" Height="54" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,35" CornerRadius="27" Background="#6176F7" Panel.ZIndex="40">
+      <Path x:Name="SuccessPath" Data="M 3,12 L 9,18 L 21,5" Width="25" Height="25" Stretch="Fill" Stroke="White" StrokeThickness="2.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" StrokeDashArray="12,12" StrokeDashOffset="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
     </Border>
   </Grid>
 </Window>
